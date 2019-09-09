@@ -178,7 +178,7 @@ hist <- gf_histogram(~Slopes, data=Slopesdf, fill="blue", color="black") %>%
   gf_labs(title="Null Distribution for Slope", x="Slope", y="Frequency")+
   geom_vline(xintercept=-ObsSlope, colour="red") +
   geom_vline(xintercept=ObsSlope, colour="red")
-  pval <- mean(abs(Slopesdf$Slopes>=ObsSlope))
+  pval <- mean(abs(Slopesdf$Slopes)>=abs(ObsSlope))
   list <- list(hist, "Simulation-based p-value"=pval)
   return(list)
 }
@@ -200,7 +200,7 @@ SimulateChiSq <- function(data, x, y, reps){
   hist <- gf_histogram(~ChiSq, data=ChiSqdf, fill="blue", color="black") %>%
     gf_labs(title="Null Distribution for Chi-Square Statistic", x="Chi-Squared", y="Frequency")+
     geom_vline(xintercept=ObsChiSq, colour="red")
-  pval <- mean(abs(ChiSqdf$ChiSq>=ObsChiSq))
+  pval <- mean(abs(ChiSqdf$ChiSq)>=ObsChiSq)
   list <- list(hist, "Simulation-based p-value"=pval)
   return(list)
   }
@@ -218,7 +218,7 @@ SimulateF <- function(data, x, y, reps){
   hist <- gf_histogram(~Fsim, data=Fsimdf, fill="blue", color="black") %>%
     gf_labs(title="Null Distribution for F-Square Statistic", x="F", y="Frequency")+
     geom_vline(xintercept=ObsF, colour="red")
-  pval <- mean(abs(Fsimdf$Fsim>=ObsF))
+  pval <- mean(abs(Fsimdf$Fsim)>=ObsF)
   list <- list(hist, "Simulation-based p-value"=pval)
     return(list)
 }
