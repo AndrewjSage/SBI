@@ -8,13 +8,16 @@ for( i in 1:reps){
 }
 PropSuccess <- Heads/n
 Results <- data.frame(PropSuccess)
-hist <- gf_histogram(~PropSuccess, data=Results,fill="blue", color="black") +
-  geom_vline(xintercept=phat, colour="red")
+hist <- gf_histogram(~PropSuccess, data=Results,fill="blue", color="black") %>%   
+  gf_labs(title="Null Distribution for Sample Proportion", x="Simulated Proportion", y="Frequency") +
+  geom_vline(xintercept=phat, colour="red") 
+
 if(alternative=="less"){
 pval <- sum(PropSuccess <= phat) /reps} else if (alternative=="greater"){
   pval <- sum(PropSuccess >= phat) /reps} else{
     pval <- sum(abs(PropSuccess - p) >= abs(phat-p)) /reps
-    hist <- gf_histogram(~PropSuccess, data=Results,fill="blue", color="black") +
+    hist <- gf_histogram(~PropSuccess, data=Results,fill="blue", color="black") %>%   
+      gf_labs(title="Null Distribution for Sample Proportion", x="Simulated Proportion", y="Frequency") +
       geom_vline(xintercept=c(p-abs(p-phat),p+abs(p-phat) ), colour="red")}
 }
 
@@ -45,7 +48,7 @@ pval <- sum(PropSuccess <= phat) /reps} else if (alternative=="greater"){
   Results <- data.frame(Difference)  #create dataframce with results
 
   hist <- gf_histogram(~Difference, data=Results, color = "black", fill="blue") %>%
-    gf_labs(title="Null Distribution for Differences in Sample Proportion", x="Group1-Group2", y="Frequency")
+    gf_labs(title="Null Distribution for Differences in Sample Proportion", x="Simulated Difference in Proportions", y="Frequency")
     if(alternative=="less"){
       pval <- sum(Results <= MeanDiff)/reps
       hist <- hist + geom_vline(xintercept=MeanDiff, colour="red")
@@ -53,12 +56,13 @@ pval <- sum(PropSuccess <= phat) /reps} else if (alternative=="greater"){
         pval <- sum(Results >= MeanDiff)/reps
         hist <- hist + geom_vline(xintercept=MeanDiff, colour="red") } else{
           pval <- sum(abs(Results) > abs(MeanDiff))/reps
-          hist <- gf_histogram(~Difference, data=Results, color = "black", fill="blue") %>%
-            gf_labs(title="Null Distribution for Differences in Sample Proportion", x="Group1-Group2", y="Frequency")+
+          hist <- gf_histogram(~Difference, data=Results, color = "black", fill="blue") +
             geom_vline(xintercept=c(MeanDiff, -MeanDiff), colour="red")   #for 1-sided test, get rid of 2nd or 3rd line
         }
-}
-  list <- list(hist, "Simulation-based p-value"=pval)
+  }
+  if(length(n)==2){
+  list <- list(hist, "Observed Difference in Proportions"=MeanDiff, "Simulation-based p-value"=pval)}else{
+  list <- list(hist, "Observed Proportion"=phat, "Simulation-based p-value"=pval)}
   return(list)
   }
 
@@ -80,7 +84,7 @@ SimulateMean <- function(x, y=NULL, mu, alternative, reps, paired=FALSE){
     Results <- data.frame(xbarsim)
 
     hist <- gf_dhistogram(~xbarsim, data=Results, border=0, fill="blue", color="black") %>%
-      gf_labs(title="Null Distribution for Sample Mean", x="Sample Mean", y="Frequency") +
+      gf_labs(title="Null Distribution for Sample Mean", x="Simulated Sample Mean", y="Frequency") +
       geom_vline(xintercept=xbar, colour="red")
 
     if(alternative=="less"){
@@ -89,7 +93,7 @@ SimulateMean <- function(x, y=NULL, mu, alternative, reps, paired=FALSE){
       pval <- sum(Results >= xbar)/reps} else{
         pval <- sum(abs(Results) >= abs(xbar))/reps
         hist <- hist <- gf_dhistogram(~xbarsim, data=Results, border=0, fill="blue", color="black") %>%
-          gf_labs(title="Null Distribution for Sample Mean", x="Sample Mean", y="Frequency") +
+          gf_labs(title="Null Distribution for Sample Mean", x="Simulated Sample Mean", y="Frequency") +
           geom_vline(xintercept=c(mu-abs(xbar-mu), mu+abs(xbar-mu)), colour="red")   #for 1-sided test, get rid of 2nd or 3rd line
       }
   } else if(paired==FALSE){
@@ -112,7 +116,7 @@ SimulateMean <- function(x, y=NULL, mu, alternative, reps, paired=FALSE){
     Results <- data.frame(Difference)  #create dataframce with results
 
     hist <-  gf_histogram(~Difference, data=Results, color = "black", fill="blue") %>%
-      gf_labs(title="Null Distribution for Differences in Sample Mean", x="Group1-Group2", y="Frequency")+
+      gf_labs(title="Null Distribution for Differences in Sample Mean", x="Simulated Difference in Sample Means", y="Frequency")+
       geom_vline(xintercept=MeanDiff, colour="red")
     if(alternative=="less"){
       pval <- sum(Results <= MeanDiff)/reps
@@ -122,7 +126,7 @@ SimulateMean <- function(x, y=NULL, mu, alternative, reps, paired=FALSE){
       hist <- hist + geom_vline(xintercept=MeanDiff, colour="red") } else{
         pval <- sum(abs(Results) > abs(MeanDiff))/reps
         hist <- gf_histogram(~Difference, data=Results, color = "black", fill="blue") %>%
-          gf_labs(title="Null Distribution for Differences in Sample Proportion", x="Group1-Group2", y="Frequency")+
+          gf_labs(title="Null Distribution for Differences in Sample Proportion", x="Simulated Difference in Sample Means", y="Frequency")+
           geom_vline(xintercept=c(MeanDiff, -MeanDiff), colour="red")   #for 1-sided test, get rid of 2nd or 3rd line
       }
   } else{
@@ -134,7 +138,7 @@ SimulateMean <- function(x, y=NULL, mu, alternative, reps, paired=FALSE){
     Difference <- c(rep("NA", reps))
 
     #simulate reps repetitions
-    for (i in 1:reps){
+    for (i in 1:reps){ #paired data
       #randomly shuffle within each pair (i.e. change sign for randomly selected pairs)
       samp <- sample(0:1, replace=TRUE, nrow(Data))
       Data$Diff[samp==1] <- -1*Data$Diff[samp==1]
@@ -144,7 +148,7 @@ SimulateMean <- function(x, y=NULL, mu, alternative, reps, paired=FALSE){
     Difference <- as.numeric(as.character(Difference))
     Results <- data.frame(Difference)  #create dataframce with results
     hist <-  gf_histogram(~Difference, data=Results, color = "black", fill="blue") %>%
-      gf_labs(title="Null Distribution for Differences in Sample Mean", x="Group1-Group2", y="Frequency")+
+      gf_labs(title="Null Distribution for Differences in Sample Mean", x="Simulated Difference in Sample Means", y="Frequency")+
       geom_vline(xintercept=MeanDiff, colour="red")
 
     if(alternative=="less"){
@@ -155,11 +159,13 @@ SimulateMean <- function(x, y=NULL, mu, alternative, reps, paired=FALSE){
       hist <- hist + geom_vline(xintercept=MeanDiff, colour="red") } else{
         pval <- sum(abs(Results) > abs(MeanDiff))/reps
         hist <- gf_histogram(~Difference, data=Results, color = "black", fill="blue") %>%
-          gf_labs(title="Null Distribution for Differences in Sample Proportion", x="Group1-Group2", y="Frequency")+
+          gf_labs(title="Null Distribution for Differences in Sample Proportion", x="Simulated Difference in Sample Means", y="Frequency")+
           geom_vline(xintercept=c(MeanDiff, -MeanDiff), colour="red")   #for 1-sided test, get rid of 2nd or 3rd line
       }
   }
-  list <- list(hist, "Simulation-based p-value"=pval)
+  if(is.null(y)==FALSE){
+    list <- list(hist, "Observed Difference in Sample Means"=MeanDiff, "Simulation-based p-value"=pval)}else{
+      list <- list(hist, "Observed Sample Mean"=xbar, "Simulation-based p-value"=pval)}
   return(list)
 }
 ###########################################################################################################
@@ -175,11 +181,11 @@ for (i in 1:reps){
 }
 Slopesdf <- data.frame(Slopes)
 hist <- gf_histogram(~Slopes, data=Slopesdf, fill="blue", color="black") %>%
-  gf_labs(title="Null Distribution for Slope", x="Slope", y="Frequency")+
+  gf_labs(title="Null Distribution for Slope", x="Simulated Slope", y="Frequency")+
   geom_vline(xintercept=-ObsSlope, colour="red") +
   geom_vline(xintercept=ObsSlope, colour="red")
   pval <- mean(abs(Slopesdf$Slopes)>=abs(ObsSlope))
-  list <- list(hist, "Simulation-based p-value"=pval)
+  list <- list(hist, "Observed Slope"=ObsSlope,  "Simulation-based p-value"=pval)
   return(list)
 }
 
@@ -198,10 +204,10 @@ SimulateChiSq <- function(data, x, y, reps){
   }
   ChiSqdf <- data.frame(ChiSq)
   hist <- gf_histogram(~ChiSq, data=ChiSqdf, fill="blue", color="black") %>%
-    gf_labs(title="Null Distribution for Chi-Square Statistic", x="Chi-Squared", y="Frequency")+
+    gf_labs(title="Null Distribution for Chi-Square Statistic", x="Simulated Chi-Squared", y="Frequency")+
     geom_vline(xintercept=ObsChiSq, colour="red")
   pval <- mean(abs(ChiSqdf$ChiSq)>=ObsChiSq)
-  list <- list(hist, "Simulation-based p-value"=pval)
+  list <- list(hist, "Observed Chi-Square Statistic"=ObsChiSq, "Simulation-based p-value"=pval)
   return(list)
   }
 
@@ -216,9 +222,9 @@ SimulateF <- function(data, x, y, reps){
   }
   Fsimdf <- data.frame(Fsim)
   hist <- gf_histogram(~Fsim, data=Fsimdf, fill="blue", color="black") %>%
-    gf_labs(title="Null Distribution for F-Square Statistic", x="F", y="Frequency")+
+    gf_labs(title="Null Distribution for F-Square Statistic", x="Simulated F", y="Frequency")+
     geom_vline(xintercept=ObsF, colour="red")
   pval <- mean(abs(Fsimdf$Fsim)>=ObsF)
-  list <- list(hist, "Simulation-based p-value"=pval)
+  list <- list(hist, "Observed F Statistic"=ObsF, "Simulation-based p-value"=pval)
     return(list)
 }
