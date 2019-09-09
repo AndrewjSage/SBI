@@ -1,0 +1,14 @@
+Package: SBI
+Type: Package
+Title: Simulation Based Inference
+Version: 0.1.0
+Author: Andrew Sage
+Maintainer: Andrew Sage <ajsage@gmail.com>
+Description: Performs basic simulation-based hypothesis tests for means, 
+            proportions, chi-square tests, and ANOVA F-tests. 
+License: What license is it under?
+Depends: 
+         tidyverse,     
+         ggformula    
+Encoding: UTF-8
+LazyData: true
