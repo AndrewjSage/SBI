@@ -1,3 +1,6 @@
+library(tudyverse)
+library(ggformula)
+
 SimulateProportion <- function(n, x, p, alternative, reps){
 if (length(n)==1){
 phat <- x/n
