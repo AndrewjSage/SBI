@@ -1,5 +1,7 @@
-library(tudyverse)
+library(tidyverse)
 library(ggformula)
+options(scipen = 999)
+
 
 SimulateProportion <- function(n, x, p, alternative, reps){
 if (length(n)==1){
