@@ -114,8 +114,9 @@ SimulateMean <- function(x, y=NULL, mu=0, alternative, reps, paired=FALSE){
       #randomly shuffle responses
       Data$Response <- Data$Response[sample(1:nrow(Data))]
       #calculate difference in Group Means
-      Difference[i] <- Data %>% filter(Group == "Group1") %>% summarize(mean(Response))-
-        Data %>% filter(Group == "Group2") %>% summarize(mean(Response))
+    #  Difference[i] <- Data %>% filter(Group == "Group1") %>% summarize(mean(Response))-
+    #    Data %>% filter(Group == "Group2") %>% summarize(mean(Response))
+      Difference[i] <- mean(Data[Data$Group=="Group1", ]$Response)-mean(Data[Data$Group=="Group2", ]$Response)
     }
     Difference <- as.numeric(as.character((Difference)))  #convert to numeric
     Results <- data.frame(Difference)  #create dataframce with results
@@ -134,7 +135,7 @@ SimulateMean <- function(x, y=NULL, mu=0, alternative, reps, paired=FALSE){
           gf_labs(title="Null Distribution for Differences in Sample Proportion", x="Simulated Difference in Sample Means", y="Frequency")+
           geom_vline(xintercept=c(MeanDiff, -MeanDiff), colour="red")   #for 1-sided test, get rid of 2nd or 3rd line
       }
-  } else{
+  } else{#for paired data
     Group1 <- x
     Group2 <- y
     MeanDiff <- mean(Group1)-mean(Group2)
