@@ -3,7 +3,7 @@ library(ggformula)
 options(scipen = 999)
 
 
-SimulateProportion <- function(n, x, p, alternative, reps){
+SimulateProportion <- function(n, x, p, alternative, reps, showline = TRUE){
 if (length(n)==1){
 phat <- x/n
 Heads <- c(rep(NA), reps)
@@ -14,16 +14,22 @@ for( i in 1:reps){
 PropSuccess <- Heads/n
 Results <- data.frame(PropSuccess)
 hist <- gf_histogram(~PropSuccess, data=Results,fill="blue", color="black") %>%   
-  gf_labs(title="Null Distribution for Sample Proportion", x="Simulated Proportion", y="Frequency") +
-  geom_vline(xintercept=phat, colour="red") 
+  gf_labs(title="Null Distribution for Sample Proportion", x="Simulated Proportion", y="Frequency")
+  
+  if(showline == TRUE){
+  hist <- hist + geom_vline(xintercept=phat, colour="red") }
 
 if(alternative=="less"){
 pval <- sum(PropSuccess <= phat) /reps} else if (alternative=="greater"){
   pval <- sum(PropSuccess >= phat) /reps} else{
     pval <- sum(abs(PropSuccess - p) >= abs(phat-p)) /reps
     hist <- gf_histogram(~PropSuccess, data=Results,fill="blue", color="black") %>%   
-      gf_labs(title="Null Distribution for Sample Proportion", x="Simulated Proportion", y="Frequency") +
-      geom_vline(xintercept=c(p-abs(p-phat),p+abs(p-phat) ), colour="red")}
+      gf_labs(title="Null Distribution for Sample Proportion", x="Simulated Proportion", y="Frequency") 
+    
+    if(showline == TRUE){
+      hist <- geom_vline(xintercept=c(p-abs(p-phat),p+abs(p-phat) ), colour="red") }
+    
+      }
 }
 
   if (length(n)==2){
@@ -61,8 +67,11 @@ pval <- sum(PropSuccess <= phat) /reps} else if (alternative=="greater"){
         pval <- sum(Results >= MeanDiff)/reps
         hist <- hist + geom_vline(xintercept=MeanDiff, colour="red") } else{
           pval <- sum(abs(Results) > abs(MeanDiff))/reps
-          hist <- gf_histogram(~Difference, data=Results, color = "black", fill="blue") +
-            geom_vline(xintercept=c(MeanDiff, -MeanDiff), colour="red")   #for 1-sided test, get rid of 2nd or 3rd line
+          hist <- gf_histogram(~Difference, data=Results, color = "black", fill="blue") 
+          
+          if(showline==TRUE){
+           hist <- hist + geom_vline(xintercept=c(MeanDiff, -MeanDiff), colour="red")   #for 1-sided test, get rid of 2nd or 3rd line
+          }
         }
   }
   if(length(n)==2){
@@ -118,7 +127,7 @@ SimulateMean <- function(x, y=NULL, mu, alternative, reps, paired=FALSE){
         Data %>% filter(Group == "Group2") %>% summarize(mean(Response))
     }
     Difference <- as.numeric(as.character((Difference)))  #convert to numeric
-    Results <- data.frame(Difference)  #create dataframce with results
+    Results <- data.frame(Difference)  #create dataframe with results
 
     hist <-  gf_histogram(~Difference, data=Results, color = "black", fill="blue") %>%
       gf_labs(title="Null Distribution for Differences in Sample Mean", x="Simulated Difference in Sample Means", y="Frequency")+
