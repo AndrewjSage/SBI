@@ -3,8 +3,13 @@ library(ggformula)
 options(scipen = 999)
 
 
+<<<<<<< HEAD
 SimulateProportion <- function(n, x, p, alternative, reps, showline = TRUE){
 if (length(n)==1){
+=======
+SimulateProportion <- function(n, x, p, alternative, reps){
+ if (length(n)==1){
+>>>>>>> 15d56422633f1f5903506e1530a383299dd502e4
 phat <- x/n
 Heads <- c(rep(NA), reps)
 for( i in 1:reps){
@@ -13,16 +18,23 @@ for( i in 1:reps){
 }
 PropSuccess <- Heads/n
 Results <- data.frame(PropSuccess)
+<<<<<<< HEAD
 hist <- gf_histogram(~PropSuccess, data=Results,fill="blue", color="black") %>%   
   gf_labs(title="Null Distribution for Sample Proportion", x="Simulated Proportion", y="Frequency")
   
   if(showline == TRUE){
   hist <- hist + geom_vline(xintercept=phat, colour="red") }
+=======
+hist <- gf_histogram(~PropSuccess, data=Results,fill="blue", color="black") %>%
+  gf_labs(title="Null Distribution for Sample Proportion", x="Simulated Proportion", y="Frequency") +
+  geom_vline(xintercept=phat, colour="red")
+>>>>>>> 15d56422633f1f5903506e1530a383299dd502e4
 
 if(alternative=="less"){
 pval <- sum(PropSuccess <= phat) /reps} else if (alternative=="greater"){
   pval <- sum(PropSuccess >= phat) /reps} else{
     pval <- sum(abs(PropSuccess - p) >= abs(phat-p)) /reps
+<<<<<<< HEAD
     hist <- gf_histogram(~PropSuccess, data=Results,fill="blue", color="black") %>%   
       gf_labs(title="Null Distribution for Sample Proportion", x="Simulated Proportion", y="Frequency") 
     
@@ -30,6 +42,11 @@ pval <- sum(PropSuccess <= phat) /reps} else if (alternative=="greater"){
       hist <- geom_vline(xintercept=c(p-abs(p-phat),p+abs(p-phat) ), colour="red") }
     
       }
+=======
+    hist <- gf_histogram(~PropSuccess, data=Results,fill="blue", color="black") %>%
+      gf_labs(title="Null Distribution for Sample Proportion", x="Simulated Proportion", y="Frequency") +
+      geom_vline(xintercept=c(p-abs(p-phat),p+abs(p-phat) ), colour="red")}
+>>>>>>> 15d56422633f1f5903506e1530a383299dd502e4
 }
 
   if (length(n)==2){
@@ -82,7 +99,7 @@ pval <- sum(PropSuccess <= phat) /reps} else if (alternative=="greater"){
 
 ###########################################################################################################
 
-SimulateMean <- function(x, y=NULL, mu, alternative, reps, paired=FALSE){
+SimulateMean <- function(x, y=NULL, mu=0, alternative, reps, paired=FALSE){
   if (is.null(y)){
     Values <- x
     xbar <- mean(Values)
@@ -123,8 +140,9 @@ SimulateMean <- function(x, y=NULL, mu, alternative, reps, paired=FALSE){
       #randomly shuffle responses
       Data$Response <- Data$Response[sample(1:nrow(Data))]
       #calculate difference in Group Means
-      Difference[i] <- Data %>% filter(Group == "Group1") %>% summarize(mean(Response))-
-        Data %>% filter(Group == "Group2") %>% summarize(mean(Response))
+    #  Difference[i] <- Data %>% filter(Group == "Group1") %>% summarize(mean(Response))-
+    #    Data %>% filter(Group == "Group2") %>% summarize(mean(Response))
+      Difference[i] <- mean(Data[Data$Group=="Group1", ]$Response)-mean(Data[Data$Group=="Group2", ]$Response)
     }
     Difference <- as.numeric(as.character((Difference)))  #convert to numeric
     Results <- data.frame(Difference)  #create dataframe with results
@@ -143,7 +161,7 @@ SimulateMean <- function(x, y=NULL, mu, alternative, reps, paired=FALSE){
           gf_labs(title="Null Distribution for Differences in Sample Proportion", x="Simulated Difference in Sample Means", y="Frequency")+
           geom_vline(xintercept=c(MeanDiff, -MeanDiff), colour="red")   #for 1-sided test, get rid of 2nd or 3rd line
       }
-  } else{
+  } else{#for paired data
     Group1 <- x
     Group2 <- y
     MeanDiff <- mean(Group1)-mean(Group2)
@@ -173,7 +191,7 @@ SimulateMean <- function(x, y=NULL, mu, alternative, reps, paired=FALSE){
       hist <- hist + geom_vline(xintercept=MeanDiff, colour="red") } else{
         pval <- sum(abs(Results) > abs(MeanDiff))/reps
         hist <- gf_histogram(~Difference, data=Results, color = "black", fill="blue") %>%
-          gf_labs(title="Null Distribution for Differences in Sample Proportion", x="Simulated Difference in Sample Means", y="Frequency")+
+          gf_labs(title="Null Distribution for Differences in Sample Mean", x="Simulated Difference in Sample Means", y="Frequency")+
           geom_vline(xintercept=c(MeanDiff, -MeanDiff), colour="red")   #for 1-sided test, get rid of 2nd or 3rd line
       }
   }
