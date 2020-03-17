@@ -26,13 +26,10 @@ pval <- sum(PropSuccess <= phat) /reps} else if (alternative=="greater"){
   pval <- sum(PropSuccess >= phat) /reps} else{
     pval <- sum(abs(PropSuccess - p) >= abs(phat-p)) /reps
     hist <- gf_histogram(~PropSuccess, data=Results,fill="blue", color="black") %>%   
-      gf_labs(title="Null Distribution for Sample Proportion", x="Simulated Proportion", y="Frequency") 
+      gf_labs(title="Null Distribution for Sample Proportion", x="Simulated Proportion", y="Frequency") }
     
     if(showline == TRUE){
       hist <- geom_vline(xintercept=c(p-abs(p-phat),p+abs(p-phat) ), colour="red") }
-    
-      }
-
 }
 
   if (length(n)==2){
