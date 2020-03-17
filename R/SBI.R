@@ -3,13 +3,8 @@ library(ggformula)
 options(scipen = 999)
 
 
-<<<<<<< HEAD
 SimulateProportion <- function(n, x, p, alternative, reps, showline = TRUE){
 if (length(n)==1){
-=======
-SimulateProportion <- function(n, x, p, alternative, reps){
- if (length(n)==1){
->>>>>>> 15d56422633f1f5903506e1530a383299dd502e4
 phat <- x/n
 Heads <- c(rep(NA), reps)
 for( i in 1:reps){
@@ -18,23 +13,18 @@ for( i in 1:reps){
 }
 PropSuccess <- Heads/n
 Results <- data.frame(PropSuccess)
-<<<<<<< HEAD
+
 hist <- gf_histogram(~PropSuccess, data=Results,fill="blue", color="black") %>%   
   gf_labs(title="Null Distribution for Sample Proportion", x="Simulated Proportion", y="Frequency")
   
   if(showline == TRUE){
   hist <- hist + geom_vline(xintercept=phat, colour="red") }
-=======
-hist <- gf_histogram(~PropSuccess, data=Results,fill="blue", color="black") %>%
-  gf_labs(title="Null Distribution for Sample Proportion", x="Simulated Proportion", y="Frequency") +
-  geom_vline(xintercept=phat, colour="red")
->>>>>>> 15d56422633f1f5903506e1530a383299dd502e4
+
 
 if(alternative=="less"){
 pval <- sum(PropSuccess <= phat) /reps} else if (alternative=="greater"){
   pval <- sum(PropSuccess >= phat) /reps} else{
     pval <- sum(abs(PropSuccess - p) >= abs(phat-p)) /reps
-<<<<<<< HEAD
     hist <- gf_histogram(~PropSuccess, data=Results,fill="blue", color="black") %>%   
       gf_labs(title="Null Distribution for Sample Proportion", x="Simulated Proportion", y="Frequency") 
     
@@ -42,11 +32,7 @@ pval <- sum(PropSuccess <= phat) /reps} else if (alternative=="greater"){
       hist <- geom_vline(xintercept=c(p-abs(p-phat),p+abs(p-phat) ), colour="red") }
     
       }
-=======
-    hist <- gf_histogram(~PropSuccess, data=Results,fill="blue", color="black") %>%
-      gf_labs(title="Null Distribution for Sample Proportion", x="Simulated Proportion", y="Frequency") +
-      geom_vline(xintercept=c(p-abs(p-phat),p+abs(p-phat) ), colour="red")}
->>>>>>> 15d56422633f1f5903506e1530a383299dd502e4
+
 }
 
   if (length(n)==2){
