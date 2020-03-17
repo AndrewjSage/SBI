@@ -3,82 +3,73 @@ library(ggformula)
 options(scipen = 999)
 
 
-SimulateProportion <- function(n, x, p, alternative, reps, showline = TRUE){
-if (length(n)==1){
-phat <- x/n
-Heads <- c(rep(NA), reps)
-for( i in 1:reps){
-  Flips <- sample(1:2, prob= c(p, 1-p), size=n, replace=TRUE)
-  Heads[i] <- sum(Flips == 1)
-}
-PropSuccess <- Heads/n
-Results <- data.frame(PropSuccess)
-
-hist <- gf_histogram(~PropSuccess, data=Results,fill="blue", color="black") %>%   
-  gf_labs(title="Null Distribution for Sample Proportion", x="Simulated Proportion", y="Frequency")
-  
-  if(showline == TRUE){
-  hist <- hist + geom_vline(xintercept=phat, colour="red") }
-
-
-if(alternative=="less"){
-pval <- sum(PropSuccess <= phat) /reps} else if (alternative=="greater"){
-  pval <- sum(PropSuccess >= phat) /reps} else{
-    pval <- sum(abs(PropSuccess - p) >= abs(phat-p)) /reps
-    hist <- gf_histogram(~PropSuccess, data=Results,fill="blue", color="black") %>%   
-      gf_labs(title="Null Distribution for Sample Proportion", x="Simulated Proportion", y="Frequency") }
+SimulateProportion <- function(n, x, p, alternative, reps){
+  if (length(n)==1){
+    phat <- x/n
+    Heads <- c(rep(NA), reps)
+    for( i in 1:reps){
+      Flips <- sample(1:2, prob= c(p, 1-p), size=n, replace=TRUE)
+      Heads[i] <- sum(Flips == 1)
+    }
+    PropSuccess <- Heads/n
+    Results <- data.frame(PropSuccess)
+    hist <- gf_histogram(~PropSuccess, data=Results,fill="blue", color="black") %>%
+      gf_labs(title="Null Distribution for Sample Proportion", x="Simulated Proportion", y="Frequency") +
+      geom_vline(xintercept=phat, colour="red")
     
-    if(showline == TRUE){
-      hist <- geom_vline(xintercept=c(p-abs(p-phat),p+abs(p-phat) ), colour="red") }
-}
-
-  if (length(n)==2){
-  nsuccess1 <- x[1]
-  nfail1 <- n[1]-x[1]
-  nsuccess2 <- x[2]
-  nfail2 <- n[2]-x[2]
-
-  Group1 <- c(rep(0, nfail1), rep(1, nsuccess1))
-  Group2 <- c(rep(0, nfail2), rep(1, nsuccess2))
-  MeanDiff <- mean(Group1)-mean(Group2)
-  Group <- c(rep("Group1", length(Group1)), rep("Group2", length(Group2)))
-  Response <- c( Group1, Group2) #observations
-  Data <- data.frame(Group, Response) #Put data into a dataframe structure
-  reps <- 1000 #number of repetitions
-  Difference <- c(rep("NA", reps))
-
-  #simulate reps repetitions
-  for (i in 1:reps){
-    #randomly shuffle responses
-    Data$Response <- Data$Response[sample(1:nrow(Data))]
-    #calculate difference in Group Means
-    Difference[i] <- Data %>% filter(Group == "Group1") %>% summarize(mean(Response))-
-      Data %>% filter(Group == "Group2") %>% summarize(mean(Response))
+    if(alternative=="less"){
+      pval <- sum(PropSuccess <= phat) /reps} else if (alternative=="greater"){
+        pval <- sum(PropSuccess >= phat) /reps} else{
+          pval <- sum(abs(PropSuccess - p) >= abs(phat-p)) /reps
+          hist <- gf_histogram(~PropSuccess, data=Results,fill="blue", color="black") %>%
+            gf_labs(title="Null Distribution for Sample Proportion", x="Simulated Proportion", y="Frequency") +
+            geom_vline(xintercept=c(p-abs(p-phat),p+abs(p-phat) ), colour="red")}
   }
-  Difference <- as.numeric(as.character((Difference)))  #convert to numeric
-  Results <- data.frame(Difference)  #create dataframce with results
-
-  hist <- gf_histogram(~Difference, data=Results, color = "black", fill="blue") %>%
-    gf_labs(title="Null Distribution for Differences in Sample Proportion", x="Simulated Difference in Proportions", y="Frequency")
+  
+  if (length(n)==2){
+    nsuccess1 <- x[1]
+    nfail1 <- n[1]-x[1]
+    nsuccess2 <- x[2]
+    nfail2 <- n[2]-x[2]
+    
+    Group1 <- c(rep(0, nfail1), rep(1, nsuccess1))
+    Group2 <- c(rep(0, nfail2), rep(1, nsuccess2))
+    MeanDiff <- mean(Group1)-mean(Group2)
+    Group <- c(rep("Group1", length(Group1)), rep("Group2", length(Group2)))
+    Response <- c( Group1, Group2) #observations
+    Data <- data.frame(Group, Response) #Put data into a dataframe structure
+    reps <- 1000 #number of repetitions
+    Difference <- c(rep("NA", reps))
+    
+    #simulate reps repetitions
+    for (i in 1:reps){
+      #randomly shuffle responses
+      Data$Response <- Data$Response[sample(1:nrow(Data))]
+      #calculate difference in Group Means
+      Difference[i] <- Data %>% filter(Group == "Group1") %>% summarize(mean(Response))-
+        Data %>% filter(Group == "Group2") %>% summarize(mean(Response))
+    }
+    Difference <- as.numeric(as.character((Difference)))  #convert to numeric
+    Results <- data.frame(Difference)  #create dataframce with results
+    
+    hist <- gf_histogram(~Difference, data=Results, color = "black", fill="blue") %>%
+      gf_labs(title="Null Distribution for Differences in Sample Proportion", x="Simulated Difference in Proportions", y="Frequency")
     if(alternative=="less"){
       pval <- sum(Results <= MeanDiff)/reps
       hist <- hist + geom_vline(xintercept=MeanDiff, colour="red")
     } else if (alternative=="greater"){
-        pval <- sum(Results >= MeanDiff)/reps
-        hist <- hist + geom_vline(xintercept=MeanDiff, colour="red") } else{
-          pval <- sum(abs(Results) > abs(MeanDiff))/reps
-          hist <- gf_histogram(~Difference, data=Results, color = "black", fill="blue") 
-          
-          if(showline==TRUE){
-           hist <- hist + geom_vline(xintercept=c(MeanDiff, -MeanDiff), colour="red")   #for 1-sided test, get rid of 2nd or 3rd line
-          }
-        }
+      pval <- sum(Results >= MeanDiff)/reps
+      hist <- hist + geom_vline(xintercept=MeanDiff, colour="red") } else{
+        pval <- sum(abs(Results) > abs(MeanDiff))/reps
+        hist <- gf_histogram(~Difference, data=Results, color = "black", fill="blue") +
+          geom_vline(xintercept=c(MeanDiff, -MeanDiff), colour="red")   #for 1-sided test, get rid of 2nd or 3rd line
+      }
   }
   if(length(n)==2){
-  list <- list(hist, "Observed Difference in Proportions"=MeanDiff, "Simulation-based p-value"=pval)}else{
-  list <- list(hist, "Observed Proportion"=phat, "Simulation-based p-value"=pval)}
+    list <- list(hist, "Observed Difference in Proportions"=MeanDiff, "Simulation-based p-value"=pval)}else{
+      list <- list(hist, "Observed Proportion"=phat, "Simulation-based p-value"=pval)}
   return(list)
-  }
+}
 
 ###########################################################################################################
 
@@ -87,7 +78,7 @@ SimulateMean <- function(x, y=NULL, mu=0, alternative, reps, paired=FALSE){
     Values <- x
     xbar <- mean(Values)
     Values <- Values - (mean(Values)-mu)
-
+    
     #Take samples of size equal to your sample and calculate sample means
     sampsize <- length(Values)
     xbarsim <- c(rep(NA), reps)
@@ -96,11 +87,11 @@ SimulateMean <- function(x, y=NULL, mu=0, alternative, reps, paired=FALSE){
       xbarsim[i] <- mean(bt)
     }
     Results <- data.frame(xbarsim)
-
+    
     hist <- gf_dhistogram(~xbarsim, data=Results, border=0, fill="blue", color="black") %>%
       gf_labs(title="Null Distribution for Sample Mean", x="Simulated Sample Mean", y="Frequency") +
       geom_vline(xintercept=xbar, colour="red")
-
+    
     if(alternative=="less"){
       pval <- sum(Results <= xbar)/reps
     } else if (alternative=="greater"){
@@ -118,18 +109,18 @@ SimulateMean <- function(x, y=NULL, mu=0, alternative, reps, paired=FALSE){
     Response <- c( Group1, Group2) #observations
     Data <- data.frame(Group, Response) #Put data into a dataframe structure
     Difference <- c(rep("NA", reps))
-      #simulate repetitions
+    #simulate repetitions
     for (i in 1:reps){
       #randomly shuffle responses
       Data$Response <- Data$Response[sample(1:nrow(Data))]
       #calculate difference in Group Means
-    #  Difference[i] <- Data %>% filter(Group == "Group1") %>% summarize(mean(Response))-
-    #    Data %>% filter(Group == "Group2") %>% summarize(mean(Response))
+      #  Difference[i] <- Data %>% filter(Group == "Group1") %>% summarize(mean(Response))-
+      #    Data %>% filter(Group == "Group2") %>% summarize(mean(Response))
       Difference[i] <- mean(Data[Data$Group=="Group1", ]$Response)-mean(Data[Data$Group=="Group2", ]$Response)
     }
     Difference <- as.numeric(as.character((Difference)))  #convert to numeric
-    Results <- data.frame(Difference)  #create dataframe with results
-
+    Results <- data.frame(Difference)  #create dataframce with results
+    
     hist <-  gf_histogram(~Difference, data=Results, color = "black", fill="blue") %>%
       gf_labs(title="Null Distribution for Differences in Sample Mean", x="Simulated Difference in Sample Means", y="Frequency")+
       geom_vline(xintercept=MeanDiff, colour="red")
@@ -151,7 +142,7 @@ SimulateMean <- function(x, y=NULL, mu=0, alternative, reps, paired=FALSE){
     Data <- data.frame(Group1, Group2) #Put data into a dataframe structure
     Data$Diff <- Data$Group1 - Data$Group2 #compute pairwise differences
     Difference <- c(rep("NA", reps))
-
+    
     #simulate reps repetitions
     for (i in 1:reps){ #paired data
       #randomly shuffle within each pair (i.e. change sign for randomly selected pairs)
@@ -165,7 +156,7 @@ SimulateMean <- function(x, y=NULL, mu=0, alternative, reps, paired=FALSE){
     hist <-  gf_histogram(~Difference, data=Results, color = "black", fill="blue") %>%
       gf_labs(title="Null Distribution for Differences in Sample Mean", x="Simulated Difference in Sample Means", y="Frequency")+
       geom_vline(xintercept=MeanDiff, colour="red")
-
+    
     if(alternative=="less"){
       pval <- sum(Results <= MeanDiff)/reps
       hist <- hist + geom_vline(xintercept=MeanDiff, colour="red")
@@ -186,19 +177,19 @@ SimulateMean <- function(x, y=NULL, mu=0, alternative, reps, paired=FALSE){
 ###########################################################################################################
 
 SimulateRegression <- function(data, x, y, reps){
-Slopes <- rep(NA, reps)
-names(data)[which(names(data)==x)] <- "x"
-names(data)[which(names(data)==y)] <- "y"
-ObsSlope <- summary(lm(data=data, y ~ x))$coefficients[2]
-for (i in 1:reps){
-  data$Shuffled <- data$x[sample(1:nrow(data))]
-  Slopes[i] <- summary(lm(data=data, y ~ Shuffled))$coefficients[2]
-}
-Slopesdf <- data.frame(Slopes)
-hist <- gf_histogram(~Slopes, data=Slopesdf, fill="blue", color="black") %>%
-  gf_labs(title="Null Distribution for Slope", x="Simulated Slope", y="Frequency")+
-  geom_vline(xintercept=-ObsSlope, colour="red") +
-  geom_vline(xintercept=ObsSlope, colour="red")
+  Slopes <- rep(NA, reps)
+  names(data)[which(names(data)==x)] <- "x"
+  names(data)[which(names(data)==y)] <- "y"
+  ObsSlope <- summary(lm(data=data, y ~ x))$coefficients[2]
+  for (i in 1:reps){
+    data$Shuffled <- data$x[sample(1:nrow(data))]
+    Slopes[i] <- summary(lm(data=data, y ~ Shuffled))$coefficients[2]
+  }
+  Slopesdf <- data.frame(Slopes)
+  hist <- gf_histogram(~Slopes, data=Slopesdf, fill="blue", color="black") %>%
+    gf_labs(title="Null Distribution for Slope", x="Simulated Slope", y="Frequency")+
+    geom_vline(xintercept=-ObsSlope, colour="red") +
+    geom_vline(xintercept=ObsSlope, colour="red")
   pval <- mean(abs(Slopesdf$Slopes)>=abs(ObsSlope))
   list <- list(hist, "Observed Slope"=ObsSlope,  "Simulation-based p-value"=pval)
   return(list)
@@ -224,7 +215,7 @@ SimulateChiSq <- function(data, x, y, reps){
   pval <- mean(abs(ChiSqdf$ChiSq)>=ObsChiSq)
   list <- list(hist, "Observed Chi-Square Statistic"=ObsChiSq, "Simulation-based p-value"=pval)
   return(list)
-  }
+}
 
 SimulateF <- function(data, x, y, reps){
   Fsim <- rep(NA, reps)
@@ -241,5 +232,5 @@ SimulateF <- function(data, x, y, reps){
     geom_vline(xintercept=ObsF, colour="red")
   pval <- mean(abs(Fsimdf$Fsim)>=ObsF)
   list <- list(hist, "Observed F Statistic"=ObsF, "Simulation-based p-value"=pval)
-    return(list)
+  return(list)
 }
