@@ -60,7 +60,7 @@ SimulateProportion <- function(n, x, p, alternative, reps){
     } else if (alternative=="greater"){
       pval <- sum(Results >= MeanDiff)/reps
       hist <- hist + geom_vline(xintercept=MeanDiff, colour="red") } else{
-        pval <- sum(abs(Results) > abs(MeanDiff))/reps
+        pval <- sum(abs(Results) >= abs(MeanDiff))/reps
         hist <- gf_histogram(~Difference, data=Results, color = "black", fill="blue") +
           geom_vline(xintercept=c(MeanDiff, -MeanDiff), colour="red")   #for 1-sided test, get rid of 2nd or 3rd line
       }
